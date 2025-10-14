@@ -14,11 +14,11 @@ A csv file /home/USER/.workspace.csv needs to be present. This csv file should b
 
 ```csv
 
-<workspacename>,<workspace-path>
+<workspacename>,<workspacepath>
 
 ```
 
-Where *workspacename* is the name of the workspace, and *workspace-path* is the path to open
+Where *workspacename* is the name of the workspace, and *workspacepath* is the path to open
 
 ### Example
 
