@@ -1,0 +1,95 @@
+#!/bin/python3
+
+import argparse
+import io
+import os
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Print a .hex file into .txt file"
+    )
+
+    # Positional argument
+    parser.add_argument("file", help="file to read")
+
+    # Options
+    parser.add_argument("-w","--width", help="The amount of bytes to print each row",type=int,default=16)
+    parser.add_argument("-x","--xprefix", help="Prefix all hexadecimal values with a 0x",action="store_true")
+    parser.add_argument("-i","--showindex", help="At the start of a row, print the index of the next byte.",action="store_true")
+    parser.add_argument("-n","--shownumber", help="Show the byte represented as a integer value",action="store_true")
+    parser.add_argument("-b","--showbinary", help="Show the byte represented as a binary value",action="store_true")
+    parser.add_argument("-c","--showcharacter", help="Show the byte represented as a ASCII character",action="store_true")
+
+    parser.add_argument("-s","--start",help="Byte index on which to start reading.",type=int,default=0)
+    parser.add_argument("-a","--amount",help="The amount of bytes to read. (if zero, read all bytes)",type=int,default=0)
+
+    args = parser.parse_args()
+
+    # Read all bytes from the the input file
+    if not os.path.exists(args.file):
+        print(f"Could not open: {args.file}")
+        exit()
+    
+    data = open(args.file,"rb").read()
+
+    # Create buffer to write all data to
+    output = io.StringIO("")
+
+    # All used formats
+    byte_fmt_template = "{:02X}"
+    index_fmt_template = "[0x{:04X}/{:04n}] "
+    number_fmt_template = ",{:03n}"
+    binary_fmt_template = ",0b{:08b}"
+    char_fmt_template = ",'{:c}'"
+
+
+    # If no amount of bytes is specified, use the size of the file
+    if args.amount == 0:
+        args.amount = len(data)
+
+    # Print each byte
+    for index in range(args.start,args.start + args.amount):
+
+        # If the index is out of range, break out of the loop.
+        if index >= len(data):
+            break
+
+        # Get the byte to print
+        byte = data[index]
+
+        # If it is the first byte of the row, print the index
+        if index % args.width == 0:
+            if args.showindex:
+                output.write(index_fmt_template.format(index,index))
+
+        # If the "x" prefix is set, print "0x"
+        if args.xprefix:
+            output.write("0x")
+
+        # Write the byte itself
+        output.write(byte_fmt_template.format(byte))
+        
+        # If the number format is enabled, print it.
+        if args.shownumber:
+            output.write(number_fmt_template.format(byte))
+
+        # If the binray format is enabled, print it.
+        if args.showbinary:
+            output.write(binary_fmt_template.format(byte))
+        
+        if args.showcharacter:
+            output.write(char_fmt_template.format(byte))
+
+        # If this byte is the last in the row, print a eol character, else a space to seperate the next byte
+        if index % args.width == args.width - 1:
+            output.write("\n")
+        else:
+            output.write(" ")
+
+
+        index += 1
+    output.write("\x1b[0m")
+    print(output.getvalue())
+
+if __name__ == "__main__":
+    main()

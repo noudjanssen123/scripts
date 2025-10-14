@@ -1,0 +1,75 @@
+#!/bin/python3
+import argparse
+import csv
+import os
+import subprocess
+from pathlib import Path
+home = Path.home()
+
+# Get the row in the file where the first cell is equal to the target
+def find_row_by_first_cell(filename, target):
+    if not os.path.exists(filename):
+      return None
+    with open(filename, newline='', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            if row and row[0] == target:
+                return row
+    return None
+
+def get_row_by_index(filename,index):
+    if not os.path.exists(filename):
+      return None
+    with open(filename,newline='',encoding='utf-8') as csvfile:
+      reader = csv.reader(csvfile)
+      read_index = 0
+      for row in reader:
+         if read_index == index:
+            return row
+         read_index += 1
+    return None
+
+# Get all the names of the workspaces in the .workspace.csv
+def get_all_workspace_names(filename):
+    list = []
+    if not os.path.exists(filename):
+      print(f"File not found: {filename}")
+      return None
+    with open(filename, newline='', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            list.append(row[0])
+    return list
+def parse_arguments():
+  parser = argparse.ArgumentParser(
+    prog='Workspace',
+    description='CLI Tool for easy opening workspaces',
+  )
+  parser.add_argument('workspace',type=str,help='Workspace to open')
+  return parser.parse_args()
+
+
+if __name__ == "__main__":
+  csv_path = home / ".workspace.csv"
+  args = parse_arguments()
+  
+  if args.workspace == "list":
+    index = 0
+    for key in get_all_workspace_names(csv_path):
+      print(f'[{index}]\t{key}')
+      index += 1
+    exit()
+  
+  row = []
+  # v = int(args.workspace)
+  if args.workspace.isdigit():
+    row = get_row_by_index(csv_path,int(args.workspace)) 
+  else:
+    row = find_row_by_first_cell(csv_path,str(args.workspace))
+
+  if row:
+    print(f'Opening: {row[0]} {row[1]}')
+    subprocess.call(['code',row[1]])
+    
+  else:
+    print(f"{csv_path} does not contain {args.workspace}")
