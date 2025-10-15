@@ -60,6 +60,10 @@ if __name__ == "__main__":
       print(f'[{index}]\t{key}')
       index += 1
     exit()
+       
+  if args.workspace == "edit":
+     subprocess.call(["code",csv_path])
+     exit()
   
   row = []
   # v = int(args.workspace)
